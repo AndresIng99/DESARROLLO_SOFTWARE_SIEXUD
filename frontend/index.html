@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Autenticación</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .card { 
+            background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px; width: 100%; max-width: 400px;
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 2.5rem; font-weight: bold;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .form-group input { 
+            width: 100%; padding: 15px; border: 2px solid #e1e5e9; border-radius: 10px;
+            font-size: 16px; transition: border-color 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .btn { 
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 500; }
+        .alert-error { background: #fee; color: #c33; border: 1px solid #fcc; }
+        .alert-success { background: #efe; color: #363; border: 1px solid #cfc; }
+        .success-dashboard { text-align: center; padding: 20px; }
+        .success-dashboard h2 { color: #667eea; margin-bottom: 20px; }
+        .user-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="loginSection">
+            <div class="logo">
+                <h1>🔐 Auth System</h1>
+                <p>Sistema de Microservicios</p>
+            </div>
+
+            <div id="loginAlert"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="admin@admin.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn" id="loginBtn">Iniciar Sesión</button>
+            </form>
+
+            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                <p><strong>Credenciales de prueba:</strong></p>
+                <p>Email: admin@admin.com | Contraseña: admin123</p>
+            </div>
+        </div>
+
+        <div id="successSection" style="display: none;">
+            <div class="success-dashboard">
+                <h2>¡Login Exitoso! ✅</h2>
+                <div class="user-info">
+                    <h3>Información del Usuario:</h3>
+                    <div id="userDetails"></div>
+                </div>
+                <button class="btn" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('loginAlert');
+            if (message) {
+                alertDiv.innerHTML = '<div class="alert alert-' + type + '">' + message + '</div>';
+            } else {
+                alertDiv.innerHTML = '';
+            }
+        }
+
+        function showSuccess(userData) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'block';
+            
+            const userDetails = document.getElementById('userDetails');
+            userDetails.innerHTML = 
+                '<p><strong>ID:</strong> ' + userData.id + '</p>' +
+                '<p><strong>Email:</strong> ' + userData.email + '</p>' +
+                '<p><strong>Nombre:</strong> ' + userData.firstName + ' ' + userData.lastName + '</p>' +
+                '<p><strong>Rol:</strong> ' + userData.role.toUpperCase() + '</p>';
+        }
+
+        function logout() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('successSection').style.display = 'none';
+            showAlert('');
+        }
+
+        async function login(email, password) {
+            try {
+                console.log('Intentando login con:', email);
+                
+                const response = await fetch(API_BASE + '/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error('Error HTTP: ' + response.status);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    return { success: true, user: data.data.user };
+                } else {
+                    return { success: false, message: data.message };
+                }
+            } catch (error) {
+                console.error('Error completo:', error);
+                return { 
+                    success: false, 
+                    message: 'Error: ' + error.message + ' - Verificar que los servicios estén funcionando'
+                };
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Mostrar loading
+            loginBtn.textContent = 'Iniciando sesión...';
+            loginBtn.disabled = true;
+            showAlert('');
+            
+            // Timeout para evitar que se quede cargando infinitamente
+            const timeoutId = setTimeout(() => {
+                loginBtn.textContent = 'Iniciar Sesión';
+                loginBtn.disabled = false;
+                showAlert('Timeout: La solicitud tomó demasiado tiempo. Verificar servicios.');
+            }, 10000);
+            
+            try {
+                const result = await login(email, password);
+                clearTimeout(timeoutId);
+                
+                if (result.success) {
+                    showAlert('Login exitoso', 'success');
+                    setTimeout(() => showSuccess(result.user), 1000);
+                } else {
+                    showAlert(result.message);
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
+                showAlert('Error inesperado: ' + error.message);
+            }
+            
+            // Rehabilitar botón
+            loginBtn.textContent = 'Iniciar Sesión';
+            loginBtn.disabled = false;
+        });
+
+        // Test de conectividad al cargar
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(API_BASE + '/health');
+                if (response.ok) {
+                    console.log('✅ Conexión con API Gateway exitosa');
+                } else {
+                    console.log('❌ API Gateway no responde correctamente');
+                }
+            } catch (error) {
+                console.log('❌ No se puede conectar al API Gateway:', error);
+                showAlert('Advertencia: No se puede conectar al servidor. Verificar que los servicios estén ejecutándose.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
