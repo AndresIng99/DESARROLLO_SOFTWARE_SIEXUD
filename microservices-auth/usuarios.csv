@@ -1,4 +1,0 @@
-ID,Email,First Name,Last Name,Role,Active,Email Verified,Created At,Updated At,Last Login
-"29625d66-4dab-478b-976f-952205597026","moderator@test.com","Moderator","Test","moderator","true","true","Tue Jul 15 2025 19:53:24 GMT+0000 (Coordinated Universal Time)","Tue Jul 15 2025 19:53:24 GMT+0000 (Coordinated Universal Time)",""
-"129ab639-4ea1-4b14-b872-aec460177918","test@test.com","Test","User","user","true","true","Tue Jul 15 2025 19:52:34 GMT+0000 (Coordinated Universal Time)","Tue Jul 15 2025 19:52:34 GMT+0000 (Coordinated Universal Time)",""
-"56c3d86d-b0cf-4f63-9670-c7a2c25db53b","admin@admin.com","Admin","User","admin","true","true","Tue Jul 15 2025 19:38:40 GMT+0000 (Coordinated Universal Time)","Tue Jul 15 2025 20:09:49 GMT+0000 (Coordinated Universal Time)","Tue Jul 15 2025 20:09:49 GMT+0000 (Coordinated Universal Time)"
