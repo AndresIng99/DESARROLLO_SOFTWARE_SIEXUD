@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Completo - Microservicios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #003366;
+            --primary-medium: #005B99;
+            --primary-light: #4DA6FF;
+            --white: #FFFFFF;
+            --surface-light: #F5F7FA;
+            --border-gray: #CCCCCC;
+            --text-dark: #333333;
+            --success: #28A745;
+            --warning: #FFC107;
+            --error: #DC3545;
+            --shadow: 0 2px 4px 0 rgba(0, 51, 102, 0.08);
+            --shadow-lg: 0 8px 16px 0 rgba(0, 51, 102, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--surface-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .microservice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .microservice-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .microservice-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            padding: 20px;
+            background: var(--primary-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-icon {
+            font-size: 32px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .test-section {
+            margin-bottom: 20px;
+        }
+
+        .test-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--primary-medium);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .btn-danger {
+            background: var(--error);
+        }
+
+        .result-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--error);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .auth-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .permission-item {
+            padding: 12px;
+            background: var(--surface-light);
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-controls {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .input-field {
+            padding: 8px 12px;
+            border: 2px solid var(--border-gray);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .logs-section {
+            background: #1a1a1a;
+            color: #00ff00;
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Demo Completo - Ecosistema de Microservicios</h1>
+            <p>Sistema de Autenticación Centralizada + Microservicios</p>
+            <div class="user-info">
+                <div>
+                    <strong id="userDisplay">No autenticado</strong>
+                    <span id="roleDisplay"></span>
+                </div>
+                <div>
+                    <button class="btn" onclick="quickLogin()">🔑 Login Rápido</button>
+                    <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles de Demo -->
+        <div class="demo-controls">
+            <h3>🎮 Controles de Demo</h3>
+            <div class="control-group">
+                <input type="email" id="emailInput" class="input-field" placeholder="Email" value="admin@admin.com">
+                <input type="password" id="passwordInput" class="input-field" placeholder="Password" value="admin123">
+                <button class="btn" onclick="login()">🔐 Login Manual</button>
+                <button class="btn btn-warning" onclick="testAllServices()">🧪 Test Todos los Servicios</button>
+                <button class="btn btn-success" onclick="clearLogs()">🧹 Limpiar Logs</button>
+            </div>
+        </div>
+
+        <!-- Grid de Microservicios -->
+        <div class="microservice-grid">
+            <!-- Auth Service -->
+            <div class="microservice-card">
+                <div class="card-header">
+                    <div class="card-icon">🔐</div>
+                    <div>
+                        <div class="card-title">Auth Service</div>
+                        <div>Puerto 3001 (vía Gateway 3000)</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="test-section">
+                        <div class="test-title">🔍 Autenticación</div>
+                        <button class="btn btn-small" onclick="testAuth('verify')">Verificar Token</button>
+                        <button class="btn btn-small" onclick="testAuth('profile')">Mi Perfil</button>
+                        <button class="btn btn-small" onclick="testAuth('health')">Health Check</button>
+                    </div>
+                    
+                    <div class="test-section">
+                        <div class="test-title">👥 Gestión de Usuarios</div>
+                        <button class="btn btn-small" onclick="testUsers('list')">Listar Usuarios</button>
+                        <button class="btn btn-small" onclick="testUsers('stats')">Estadísticas</button>
+                        <button class="btn btn-small" onclick="testUsers('create')">Crear Usuario</button>
+                    </div>
+
+                    <div class="test-section">
+                        <div class="test-title">🛡️ Permisos</div>
+                        <button class="btn btn-small" onclick="testPermissions('projects.create')">Crear Proyectos</button>
+                        <button class="btn btn-small" onclick="testPermissions('finance.manage')">Gestionar Finanzas</button>
+                        <button class="btn btn-small" onclick="testPermissions('contracts.read')">Ver Contratos</button>
+                    </div>
+
+                    <div class="result-area" id="authResults">Resultados aparecerán aquí...</div>
+                </div>
+            </div>
+
+            <!-- Hello Service -->
+            <div class="microservice-card">
+                <div class="card-header">
+                    <div class="card-icon">👋</div>
+                    <div>
+                        <div class="card-title">Hello Service</div>
+                        <div>Puerto 3010 (vía Gateway 3000)</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="test-section">
+                        <div class="test-title">🌐 Rutas Públicas</div>
+                        <button class="btn btn-small btn-success" onclick="testHello('public')">Saludo Público</button>
+                        <button class="btn btn-small btn-success" onclick="testHello('health')">Health Check</button>
+                    </div>
+                    
+                    <div class="test-section">
+                        <div class="test-title">🔒 Rutas Privadas</div>
+                        <button class="btn btn-small" onclick="testHello('private')">Saludo Privado</button>
+                        <button class="btn btn-small" onclick="testHello('whoami')">¿Quién Soy?</button>
+                    </div>
+
+                    <div class="test-section">
+                        <div class="test-title">👑 Solo Admins</div>
+                        <button class="btn btn-small btn-warning" onclick="testHello('admin')">Área de Admins</button>
+                    </div>
+
+                    <div class="result-area" id="helloResults">Resultados aparecerán aquí...</div>
+                </div>
+            </div>
+
+            <!-- Future Services -->
+            <div class="microservice-card">
+                <div class="card-header">
+                    <div class="card-icon">🚧</div>
+                    <div>
+                        <div class="card-title">Próximos Servicios</div>
+                        <div>En desarrollo...</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="test-section">
+                        <div class="test-title">📊 Project Service</div>
+                        <button class="btn btn-small" disabled>Crear Proyecto</button>
+                        <button class="btn btn-small" disabled>Listar Proyectos</button>
+                        <button class="btn btn-small" disabled>Gestionar Equipo</button>
+                    </div>
+                    
+                    <div class="test-section">
+                        <div class="test-title">📝 Contract Service</div>
+                        <button class="btn btn-small" disabled>Crear Contrato</button>
+                        <button class="btn btn-small" disabled>Aprobar Contrato</button>
+                        <button class="btn btn-small" disabled>Ver Contratos</button>
+                    </div>
+
+                    <div class="test-section">
+                        <div class="test-title">💰 Finance Service</div>
+                        <button class="btn btn-small" disabled>Ver Finanzas</button>
+                        <button class="btn btn-small" disabled>Gestionar Presupuesto</button>
+                        <button class="btn btn-small" disabled>Reportes</button>
+                    </div>
+
+                    <div class="result-area">
+                        <div style="color: #666; font-style: italic;">
+                            Estos servicios se pueden crear usando la misma infraestructura de autenticación.
+                            
+                            Cada uno tendría:
+                            • Su propio puerto y lógica
+                            • Autenticación centralizada
+                            • Permisos granulares
+                            • Integración automática
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Permisos Actual -->
+        <div class="auth-section">
+            <h3>🛡️ Sistema de Permisos del Usuario Actual</h3>
+            <div id="permissionsDisplay">
+                <p style="color: #666;">Haz login para ver tus permisos</p>
+            </div>
+        </div>
+
+        <!-- Logs en Tiempo Real -->
+        <div class="logs-section" id="logsArea">
+            <div><strong>📋 Logs del Sistema (Tiempo Real)</strong></div>
+            <div>Inicia sesión y prueba los servicios para ver los logs...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let currentUser = null;
+        let authToken = localStorage.getItem('authToken');
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                verifyTokenAndLoadUser();
+            }
+            updateUI();
+        });
+
+        // =================== AUTENTICACIÓN ===================
+
+        async function login() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            log(`🔐 Intentando login: ${email}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.data.accessToken;
+                    localStorage.setItem('authToken', authToken);
+                    currentUser = data.data.user;
+                    
+                    log(`✅ Login exitoso: ${currentUser.firstName} ${currentUser.lastName} (${currentUser.role})`);
+                    updateUI();
+                    loadUserPermissions();
+                } else {
+                    log(`❌ Error de login: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ Error de conexión: ${error.message}`);
+            }
+        }
+
+        async function quickLogin() {
+            document.getElementById('emailInput').value = 'admin@admin.com';
+            document.getElementById('passwordInput').value = 'admin123';
+            await login();
+        }
+
+        async function verifyTokenAndLoadUser() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify`, {
+                    headers: { Authorization: `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.data.user;
+                    log(`✅ Token válido: ${currentUser.firstName} ${currentUser.lastName}`);
+                    loadUserPermissions();
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                logout();
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            log(`🚪 Sesión cerrada`);
+            updateUI();
+            document.getElementById('permissionsDisplay').innerHTML = '<p style="color: #666;">Haz login para ver tus permisos</p>';
+        }
+
+        // =================== TESTS DE SERVICIOS ===================
+
+        async function testAuth(action) {
+            const endpoints = {
+                verify: '/auth/verify',
+                profile: '/auth/profile',
+                health: '/auth/microservice-health'
+            };
+
+            const url = `${API_BASE}${endpoints[action]}`;
+            log(`🔍 Testing Auth: ${action} -> ${url}`);
+
+            try {
+                const response = await fetch(url, {
+                    headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+                });
+
+                const data = await response.json();
+                displayResult('authResults', `${action.toUpperCase()}:`, data);
+                
+                if (data.success) {
+                    log(`✅ Auth ${action}: OK`);
+                } else {
+                    log(`❌ Auth ${action}: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ Error en Auth ${action}: ${error.message}`);
+                displayResult('authResults', `ERROR:`, { error: error.message });
+            }
+        }
+
+        async function testUsers(action) {
+            if (!authToken) {
+                log(`❌ Se requiere login para gestión de usuarios`);
+                return;
+            }
+
+            const endpoints = {
+                list: '/users',
+                stats: '/users/stats/overview',
+                create: '/users'
+            };
+
+            let url = `${API_BASE}${endpoints[action]}`;
+            let method = 'GET';
+            let body = null;
+
+            if (action === 'create') {
+                method = 'POST';
+                body = JSON.stringify({
+                    email: `test_${Date.now()}@demo.com`,
+                    password: 'Demo123',
+                    firstName: 'Demo',
+                    lastName: 'User',
+                    role: 'user'
+                });
+            }
+
+            log(`👥 Testing Users: ${action} -> ${url}`);
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body
+                });
+
+                const data = await response.json();
+                displayResult('authResults', `USERS ${action.toUpperCase()}:`, data);
+                
+                if (data.success) {
+                    log(`✅ Users ${action}: OK`);
+                } else {
+                    log(`❌ Users ${action}: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ Error en Users ${action}: ${error.message}`);
+            }
+        }
+
+        async function testPermissions(permission) {
+            if (!authToken || !currentUser) {
+                log(`❌ Se requiere login para verificar permisos`);
+                return;
+            }
+
+            log(`🛡️ Testing Permission: ${permission}`);
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/check-permission`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        permission
+                    })
+                });
+
+                const data = await response.json();
+                displayResult('authResults', `PERMISSION ${permission}:`, data);
+                
+                if (data.success) {
+                    const status = data.hasPermission ? '✅ PERMITIDO' : '❌ DENEGADO';
+                    log(`${status} ${permission} para ${currentUser.role}`);
+                } else {
+                    log(`❌ Error verificando ${permission}: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ Error en Permission ${permission}: ${error.message}`);
+            }
+        }
+
+        async function testHello(action) {
+            const endpoints = {
+                public: '/hello',
+                health: '/hello/health',
+                private: '/hello/private',
+                whoami: '/whoami',
+                admin: '/hello/admin'
+            };
+
+            const url = `${API_BASE}${endpoints[action]}`;
+            const requiresAuth = ['private', 'whoami', 'admin'].includes(action);
+            
+            log(`👋 Testing Hello: ${action} -> ${url}`);
+
+            try {
+                const response = await fetch(url, {
+                    headers: (requiresAuth && authToken) ? { Authorization: `Bearer ${authToken}` } : {}
+                });
+
+                const data = await response.json();
+                displayResult('helloResults', `${action.toUpperCase()}:`, data);
+                
+                if (data.success) {
+                    log(`✅ Hello ${action}: ${data.message}`);
+                } else {
+                    log(`❌ Hello ${action}: ${data.message}`);
+                }
+            } catch (error) {
+                log(`❌ Error en Hello ${action}: ${error.message}`);
+                displayResult('helloResults', `ERROR:`, { error: error.message });
+            }
+        }
+
+        async function testAllServices() {
+            log(`🧪 Iniciando test completo de todos los servicios...`);
+            
+            // Test Auth Service
+            await testAuth('health');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            if (authToken) {
+                await testAuth('verify');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testUsers('stats');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testPermissions('projects.create');
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Test Hello Service
+            await testHello('health');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testHello('public');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            if (authToken) {
+                await testHello('private');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testHello('admin');
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log(`🎉 Test completo finalizado!`);
+        }
+
+        async function loadUserPermissions() {
+            if (!currentUser || !authToken) return;
+
+            const rolePermissions = {
+                'admin': [
+                    'projects.create', 'projects.read', 'projects.update', 'projects.delete',
+                    'contracts.create', 'contracts.read', 'contracts.update',
+                    'finance.read', 'finance.manage',
+                    'users.create', 'users.read', 'users.update', 'users.delete'
+                ],
+                'moderator': [
+                    'projects.read', 'projects.update',
+                    'contracts.read',
+                    'finance.read',
+                    'users.read'
+                ],
+                'user': [
+                    'projects.read',
+                    'contracts.read'
+                ]
+            };
+
+            const permissions = rolePermissions[currentUser.role] || [];
+            
+            let html = `
+                <h4>Permisos para: ${currentUser.firstName} ${currentUser.lastName} (${currentUser.role})</h4>
+                <div class="permissions-grid">
+            `;
+            
+            permissions.forEach(permission => {
+                html += `
+                    <div class="permission-item">
+                        <span>${permission}</span>
+                        <span class="status-badge status-success">✅ Permitido</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('permissionsDisplay').innerHTML = html;
+        }
+
+        // =================== UTILIDADES ===================
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('userDisplay').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+                document.getElementById('roleDisplay').textContent = `(${currentUser.role})`;
+            } else {
+                document.getElementById('userDisplay').textContent = 'No autenticado';
+                document.getElementById('roleDisplay').textContent = '';
+            }
+        }
+
+        function displayResult(elementId, title, data) {
+            const element = document.getElementById(elementId);
+            const formatted = JSON.stringify(data, null, 2);
+            element.textContent = `${title}\n${formatted}`;
+        }
+
+        function log(message) {
+            const logsArea = document.getElementById('logsArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logsArea.appendChild(logEntry);
+            logsArea.scrollTop = logsArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            const logsArea = document.getElementById('logsArea');
+            logsArea.innerHTML = '<div><strong>📋 Logs del Sistema (Tiempo Real)</strong></div>';
+        }
+    </script>
+</body>
+</html>
