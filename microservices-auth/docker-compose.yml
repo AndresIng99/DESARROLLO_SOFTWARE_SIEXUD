@@ -1,0 +1,148 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # Redis para cache y sesiones
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=mi_super_secreto_jwt_2024
+      - JWT_EXPIRES_IN=24h
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/auth_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./auth-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build: ./user-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/auth_db
+      - AUTH_SERVICE_URL=http://auth-service:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Hello Service
+  hello-service:
+    build: ./hello-service
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+    depends_on: []
+    volumes:
+      - ./hello-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=mi_super_secreto_jwt_2024
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./api-gateway:/app
+      - ./frontend:/app/frontend
+      - /app/node_modules
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # pgAdmin para administrar la base de datos
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  microservices-network:
+    driver: bridge
